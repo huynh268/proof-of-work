@@ -19,6 +19,12 @@ func main() {
 		fmt.Printf("Data: %s\n", block.Data)
 		fmt.Printf("PrevHash: %x\n", block.PrevHash)
 		fmt.Printf("Hash: %x\n", block.Hash)
+		pow := CreatePoW(block)
+		valid := "valid"
+		if !pow.Validate() {
+			valid = "invalid"
+		}
+		fmt.Printf("PoW: %s\n", valid)
 		fmt.Println()
 	}
 }

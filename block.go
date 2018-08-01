@@ -2,8 +2,8 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
-	"strconv"
+	"encoding/gob"
+	"log"
 	"time"
 )
 
@@ -13,20 +13,45 @@ type Block struct {
 	Data      []byte
 	PrevHash  []byte
 	Hash      []byte
-}
-
-// CreateHash creates a hash value for a block
-func (block *Block) CreateHash() {
-	timestamp := []byte(strconv.FormatInt(block.Timestamp, 10))
-	headers := bytes.Join([][]byte{block.PrevHash, block.Data, timestamp}, []byte{})
-	hash := sha256.Sum256(headers)
-
-	block.Hash = hash[:]
+	Nonce     int
 }
 
 // CreateBlock creates a new block
 func CreateBlock(data string, prevHash []byte) *Block {
-	block := &Block{time.Now().Unix(), []byte(data), prevHash, []byte{}}
-	block.CreateHash()
+	block := &Block{time.Now().Unix(), []byte(data), prevHash, []byte{}, 0}
+	pow := CreatePoW(block)
+	nonce, hash := pow.Mine()
+
+	block.Hash = hash[:]
+	block.Nonce = nonce
+
 	return block
+}
+
+// SerializeBlock serializes a block to byte array
+func (block *Block) SerializeBlock() []byte {
+	var result bytes.Buffer
+
+	encoder := gob.NewEncoder(&result)
+	err := encoder.Encode(block)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return result.Bytes()
+}
+
+// DeserializeBlock deserializes a block
+func DeserializeBlock(encodedBlock []byte) *Block {
+	var block Block
+
+	decoder := gob.NewDecoder(bytes.NewReader(encodedBlock))
+	err := decoder.Decode(&block)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return &block
 }
