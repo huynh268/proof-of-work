@@ -1,15 +1,49 @@
 package main
 
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/syndtr/goleveldb/leveldb"
+)
+
+const file = "blocks"
+
 // BlockChain structure
-type BlockChain struct {
-	blocks []*Block
+type Blockchain struct {
+	tip []byte
+	db  *leveldb.DB
 }
 
 // AddBlock adds a new block to blockchain
-func (blockchain *BlockChain) AddBlock(data string) {
-	prevBlock := blockchain.blocks[len(blockchain.blocks)-1]
-	newBlock := CreateBlock(data, prevBlock.Hash)
-	blockchain.blocks = append(blockchain.blocks, newBlock)
+func (blockchain *Blockchain) AddBlock(data string) {
+	var prevBlockHash []byte
+
+	dat, err := blockchain.db.Get([]byte("prevBlockHash"), nil)
+	if err != nil {
+		log.Panic(err)
+	}
+	fmt.Printf("data: %x\n", dat)
+	if dat == nil {
+		fmt.Println("Blockchain does not exist.")
+	}
+
+	prevBlockHash = dat
+
+	newBlock := CreateBlock(data, prevBlockHash)
+
+	err = blockchain.db.Put(newBlock.Hash, newBlock.SerializeBlock(), nil)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = blockchain.db.Put([]byte("prevBlockHash"), newBlock.Hash, nil)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	blockchain.tip = newBlock.Hash
 }
 
 // CreateGenesisBlock creates a genesis block - the first block of the chain
@@ -18,6 +52,50 @@ func CreateGenesisBlock() *Block {
 }
 
 // CreateBlockchain creates a new blockchain
-func CreateBlockchain() *BlockChain {
-	return &BlockChain{[]*Block{CreateGenesisBlock()}}
+func CreateBlockchain() *Blockchain {
+	var tip []byte
+
+	db, err := leveldb.OpenFile(file, nil)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	data, error := db.Get([]byte("prevBlockHash"), nil)
+	if err != nil {
+		log.Panic(error)
+	}
+	if data == nil {
+		fmt.Println("Blockchain does not exists. Creating a new one...")
+		genesisBlock := CreateGenesisBlock()
+
+		err = db.Put(genesisBlock.Hash, genesisBlock.SerializeBlock(), nil)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		err = db.Put([]byte("prevBlockHash"), genesisBlock.Hash, nil)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		tip = genesisBlock.Hash
+	} else {
+		tip = data
+	}
+
+	blockchain := Blockchain{tip, db}
+
+	return &blockchain
+}
+
+func (blockchain *Blockchain) Iterator() *BlockchainIterator {
+	blockchainIterator := &BlockchainIterator{blockchain.tip, blockchain.db}
+	return blockchainIterator
+}
+
+func dbExists(file string) bool {
+	if _, err := os.Stat(file); os.IsNotExist(err) {
+		return false
+	}
+	return true
 }

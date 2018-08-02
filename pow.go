@@ -48,7 +48,7 @@ func (pow *PoW) Mine() (int, []byte) {
 	var hash [32]byte
 	nonce := 0
 
-	fmt.Printf("Data of the lock being mined: \"%s\"\n", pow.block.Data)
+	fmt.Printf("Data of the block being mined: \"%s\"\n", pow.block.Data)
 
 	for nonce < maxNonce {
 		data := pow.prepareData(nonce)
