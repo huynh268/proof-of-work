@@ -9,16 +9,16 @@ import (
 
 // Block structure
 type Block struct {
-	Timestamp int64
-	Data      []byte
-	PrevHash  []byte
-	Hash      []byte
-	Nonce     int
+	Timestamp   int64
+	Transaction []*Transaction
+	PrevHash    []byte
+	Hash        []byte
+	Nonce       int
 }
 
 // CreateBlock creates a new block
-func CreateBlock(data string, prevHash []byte) *Block {
-	block := &Block{time.Now().Unix(), []byte(data), prevHash, []byte{}, 0}
+func CreateBlock(transaction []*Transaction, prevHash []byte) *Block {
+	block := &Block{time.Now().Unix(), transaction, prevHash, []byte{}, 0}
 	pow := CreatePoW(block)
 	nonce, hash := pow.Mine()
 

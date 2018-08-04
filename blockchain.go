@@ -8,7 +8,8 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-const file = "blocks"
+const file = "blocksDB"
+const genesisCoinbaseData = "Genesis block!"
 
 // BlockChain structure
 type Blockchain struct {
@@ -17,7 +18,7 @@ type Blockchain struct {
 }
 
 // AddBlock adds a new block to blockchain
-func (blockchain *Blockchain) AddBlock(data string) {
+func (blockchain *Blockchain) AddBlock(transaction []*Transaction) {
 	var prevBlockHash []byte
 
 	dat, err := blockchain.db.Get([]byte("prevBlockHash"), nil)
@@ -31,7 +32,7 @@ func (blockchain *Blockchain) AddBlock(data string) {
 
 	prevBlockHash = dat
 
-	newBlock := CreateBlock(data, prevBlockHash)
+	newBlock := CreateBlock(transaction, prevBlockHash)
 
 	err = blockchain.db.Put(newBlock.Hash, newBlock.SerializeBlock(), nil)
 	if err != nil {
@@ -47,12 +48,12 @@ func (blockchain *Blockchain) AddBlock(data string) {
 }
 
 // CreateGenesisBlock creates a genesis block - the first block of the chain
-func CreateGenesisBlock() *Block {
-	return CreateBlock("Genesis Block", []byte{})
+func CreateGenesisBlock(coinbase *Transaction) *Block {
+	return CreateBlock([]*Transaction{coinbase}, []byte{})
 }
 
 // CreateBlockchain creates a new blockchain
-func CreateBlockchain() *Blockchain {
+func CreateBlockchain(address string) *Blockchain {
 	var tip []byte
 
 	db, err := leveldb.OpenFile(file, nil)
@@ -60,13 +61,16 @@ func CreateBlockchain() *Blockchain {
 		log.Panic(err)
 	}
 
-	data, error := db.Get([]byte("prevBlockHash"), nil)
+	data, err := db.Get([]byte("prevBlockHash"), nil)
 	if err != nil {
-		log.Panic(error)
+		log.Panic(err)
 	}
+
 	if data == nil {
 		fmt.Println("Blockchain does not exists. Creating a new one...")
-		genesisBlock := CreateGenesisBlock()
+
+		coinbaseTX := CreateCoinbaseTX(address, genesisCoinbaseData)
+		genesisBlock := CreateGenesisBlock(coinbaseTX)
 
 		err = db.Put(genesisBlock.Hash, genesisBlock.SerializeBlock(), nil)
 		if err != nil {
