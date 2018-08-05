@@ -1,0 +1,20 @@
+=============== Aug 5, 2018 (PDT) ===============
+00:31:51.826033 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+00:31:51.827109 db@open opening
+00:31:51.828061 version@stat F·[] S·0B[] Sc·[]
+00:31:51.828407 db@janitor F·2 G·0
+00:31:51.828453 db@open done T·1.310923ms
+00:31:53.088447 db@close closing
+00:31:53.088738 db@close done T·280.781µs
+=============== Aug 5, 2018 (PDT) ===============
+00:31:58.752472 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+00:31:58.752874 version@stat F·[] S·0B[] Sc·[]
+00:31:58.752902 db@open opening
+00:31:58.752967 journal@recovery F·1
+00:31:58.753480 journal@recovery recovering @1
+00:31:58.754289 memdb@flush created L0@2 N·2 S·546B "\x00\x00A..\xa4\xec\xeb,v1":"pre..ash,v2"
+00:31:58.755014 version@stat F·[1] S·546B[546B] Sc·[0.25]
+00:31:58.756821 db@janitor F·3 G·0
+00:31:58.756880 db@open done T·3.959925ms
+00:31:58.757526 db@close closing
+00:31:58.757890 db@close done T·319.282µs

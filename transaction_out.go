@@ -1,6 +1,7 @@
 package main
 
+// TXOut transaction output structure
 type TXOut struct {
-	value        int
+	Value        int
 	ScriptPubKey string
 }

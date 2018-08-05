@@ -12,7 +12,7 @@ var (
 	maxNonce = math.MaxInt64
 )
 
-const difficulty = 2 << 3
+const difficulty = 1 << 4
 
 // PoW structure
 type PoW struct {
@@ -33,7 +33,7 @@ func CreatePoW(block *Block) *PoW {
 func (pow *PoW) prepareData(nonce int) []byte {
 	data := bytes.Join([][]byte{
 		pow.block.PrevHash,
-		pow.block.Data,
+		pow.block.HashTransactions(),
 		IntToByte(pow.block.Timestamp),
 		IntToByte(int64(difficulty)),
 		IntToByte(int64(nonce)),
@@ -48,7 +48,7 @@ func (pow *PoW) Mine() (int, []byte) {
 	var hash [32]byte
 	nonce := 0
 
-	fmt.Printf("Data of the block being mined: \"%s\"\n", pow.block.Data)
+	//fmt.Printf("Data of the block being mined: \"%s\"\n", pow.block.Transaction)
 
 	for nonce < maxNonce {
 		data := pow.prepareData(nonce)

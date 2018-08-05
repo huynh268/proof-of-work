@@ -6,7 +6,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-// BlockChainIterator iterates over the blocks in database
+// BlockchainIterator iterates over the blocks in database
 type BlockchainIterator struct {
 	currentBlockHash []byte
 	db               *leveldb.DB

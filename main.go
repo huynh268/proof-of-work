@@ -1,10 +1,7 @@
 package main
 
 func main() {
-	blockchain := CreateBlockchain()
-	defer blockchain.db.Close()
-
-	cli := CLI{blockchain}
+	cli := CLI{}
 	cli.Run()
 
 	// blockchain.AddBlock("send 1 eth to A")
