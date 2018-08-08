@@ -1,8 +1,16 @@
 package main
 
+import "bytes"
+
 // TXIn transaction input structure
 type TXIn struct {
-	Txid      []byte
+	TxID      []byte
 	Vout      int
-	ScriptSig string
+	Signature []byte
+	PublicKey []byte
+}
+
+func (intput *TXIn) UseKey(pubKeyHash []byte) bool {
+	lockingHash := HashPublicKey(intput.PublicKey)
+	return bytes.Compare(lockingHash, pubKeyHash) == 0
 }

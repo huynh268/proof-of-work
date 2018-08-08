@@ -6,11 +6,14 @@ import (
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 // CLI structure
 type CLI struct {
 	blockchain *Blockchain
+	utxo       *UTXOSet
 }
 
 // Run runs command lines
@@ -90,6 +93,15 @@ func (cli *CLI) createBlockchain(address string) {
 	bc := CreateBlockchain(address)
 	defer bc.db.Close()
 
+	db, err := leveldb.OpenFile("utxoDB", nil)
+	if err != nil {
+		log.Panic(err)
+	}
+	UTXOSet := UTXOSet{bc, db}
+	defer db.Close()
+
+	UTXOSet.Reindex()
+
 	fmt.Println("Done!")
 }
 
@@ -97,9 +109,17 @@ func (cli *CLI) send(from, to string, amount int) {
 	fmt.Printf("%d coins sent to %s from %s", amount, to, from)
 
 	bc := CreateBlockchain(from)
+	db, err := leveldb.OpenFile("utxoDB", nil)
+	if err != nil {
+		log.Panic(err)
+	}
+	UTXOSet := UTXOSet{bc, db}
 	defer bc.db.Close()
+	defer db.Close()
 
-	tx := NewUTXOTransaction(from, to, amount, bc)
+	wallet := Get
+
+	tx := NewUTXOTransaction(wallet, to, amount, &UTXOSet)
 	bc.MineBlock([]*Transaction{tx})
 	fmt.Println("Success!")
 }
@@ -139,10 +159,18 @@ func (cli *CLI) printChain() {
 
 func (cli *CLI) getBalance(address string) {
 	bc := CreateBlockchain(address)
+	db, err := leveldb.OpenFile("utxoDB", nil)
+	if err != nil {
+		log.Panic(err)
+	}
+	UTXOSet := UTXOSet{bc, db}
 	defer bc.db.Close()
+	defer db.Close()
 
 	balance := 0
-	UTXOs := bc.FindUTXO(address)
+	pubKeyHash := Base58Decode([]byte(address))
+	pubKeyHash = pubKeyHash[1 : len(pubKeyHash)-4]
+	UTXOs := UTXOSet.FindUTXO(pubKeyHash)
 
 	for _, out := range UTXOs {
 		balance += out.Value
