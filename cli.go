@@ -105,7 +105,7 @@ func (cli *CLI) createBlockchain(address string) {
 	fmt.Println("Done!")
 }
 
-func (cli *CLI) send(from, to string, amount int) {
+func (cli *CLI) send(from, to string, amount int, nodeID string, mineBlock bool) {
 	fmt.Printf("%d coins sent to %s from %s", amount, to, from)
 
 	bc := CreateBlockchain(from)
@@ -117,9 +117,14 @@ func (cli *CLI) send(from, to string, amount int) {
 	defer bc.db.Close()
 	defer db.Close()
 
-	wallet := Get
+	wallets, err := CreateWallets(nodeID)
+	if err != nil {
+		log.Panic(err)
+	}
 
-	tx := NewUTXOTransaction(wallet, to, amount, &UTXOSet)
+	wallet := wallets.GetWallet(from)
+
+	tx := NewUTXOTransaction(&wallet, to, amount, &UTXOSet)
 	bc.MineBlock([]*Transaction{tx})
 	fmt.Println("Success!")
 }

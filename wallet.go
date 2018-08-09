@@ -18,10 +18,6 @@ type Wallet struct {
 	PublicKey  []byte
 }
 
-type Wallets struct {
-	Wallets map[string]*Wallet
-}
-
 func CreateWallet() *Wallet {
 	private, public := newKeyPair()
 	wallet := Wallet{private, public}

@@ -60,6 +60,11 @@ func (u UTXOSet) FindSpendableOutputs(pubKeyHash []byte, amount int) (int, map[s
 			}
 		}
 	}
+	iter.Release()
+	err := iter.Error()
+	if err != nil {
+		log.Panic(err)
+	}
 
 	return accummulated, unspentOutputs
 }
@@ -80,6 +85,11 @@ func (u UTXOSet) FindUTXO(pubKeyHash []byte) []TXOut {
 				UTXOs = append(UTXOs, out)
 			}
 		}
+	}
+	iter.Release()
+	err := iter.Error()
+	if err != nil {
+		log.Panic(err)
 	}
 
 	return UTXOs
